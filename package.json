@@ -1,0 +1,29 @@
+{
+  "name": "indexeddb-sharding",
+  "version": "1.0.6",
+  "description": "Package to insert large amounts of data into indexeddb while preserving the performance. ",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "jest --coverage",
+    "build": "tsc --project tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "indexeddb-sharding"
+  },
+  "author": "Bram Postema",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "dexie": "^4.0.4",
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "fake-indexeddb": "^5.0.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.0.0"
+  }
+}

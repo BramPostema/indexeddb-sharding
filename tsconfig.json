@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+      "allowJs": true,
+      "target": "es5",
+      "module": "es2015",
+      "importHelpers": true,
+      "strictNullChecks": false,
+      "noImplicitAny": false,
+      "noImplicitReturns": false,
+      "moduleResolution": "node",
+      "lib": ["es2020", "dom"],
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "dist",
+      "declaration": true
+    },
+    "dirs": [
+      "/src/"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "test",
+      "src/**/*.spec.ts",
+      "src/**/*.test.ts"
+    ]
+  }
