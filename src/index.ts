@@ -74,6 +74,13 @@ export class ShardingService<T extends Item> {
         // Bulk insert all items into the determined table
         await table.bulkPut(items);
     }
+    async addPreparedItems(items: T[], tableName: string): Promise<void> {
+        // Determine the shard index and table for the first item in the batch
+        const shardIndex = this.getShardIndex(items[0].id);
+        const table = this.getShardTable(shardIndex, tableName);
+        // Bulk insert all items into the determined table
+        await table.bulkAdd(items);
+    }
 
     async deleteItemById(id: string, tableName: string): Promise<void> {
         // Determine the shard index and table
