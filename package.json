@@ -4,13 +4,14 @@
   "description": "Package to insert large amounts of data into indexeddb while preserving the performance. ",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  
   "scripts": {
     "test": "jest --coverage",
     "build": "tsc --project tsconfig.json"
   },
   "repository": {
     "type": "git",
-    "url": "indexeddb-sharding"
+    "url": "https://github.com/BramPostema/indexeddb-sharding.git"
   },
   "author": "Bram Postema",
   "license": "Apache-2.0",
