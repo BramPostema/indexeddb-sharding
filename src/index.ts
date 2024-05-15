@@ -24,10 +24,13 @@ export class ShardingService<T extends Item> {
     async getDataBaseInstances(): Promise<ShardedDB<T>[]> {
         return this.dbInstances;
     }
-    private getShardedItemArrays(items: T[]): T[][] {
+    public getShardedItemArrays(items: T[]): T[][] {
         // Group items by shard index
-        const itemsByShard: T[][] = new Array(this.shardCount).fill(null).map(() => []);
+        const itemsByShard: T[][] = new Array(this.shardCount).fill([]).map(() => []);
         for (const item of items) {
+            if (item.id === undefined) {
+                throw new Error('Item id is required. Current item id is '+item.id+ ".");
+            }
             const shardIndex = this.getShardIndex(item.id);
             itemsByShard[shardIndex].push(item);
         }
@@ -35,7 +38,7 @@ export class ShardingService<T extends Item> {
     }
     private getShardIndex(id: string): number {
         // Determine the shard index based on the item's ID (e.g., hash it and mod by shard count)
-        const hashValue = parseInt(id.toString(), 16); // Convert the ID (hex) to an integer
+        const hashValue = parseInt(id, 16); // Convert the ID (hex) to an integer
         return hashValue % this.shardCount; // Mod by shard count to determine shard index
     }
 
@@ -74,13 +77,13 @@ export class ShardingService<T extends Item> {
         // Bulk insert all items into the determined table
         await table.bulkPut(items);
     }
-    async addPreparedItems(items: T[], tableName: string): Promise<void> {
-        // Determine the shard index and table for the first item in the batch
-        const shardIndex = this.getShardIndex(items[0].id);
-        const table = this.getShardTable(shardIndex, tableName);
-        // Bulk insert all items into the determined table
-        await table.bulkAdd(items);
-    }
+    // async addPreparedItems(items: T[], tableName: string): Promise<void> {
+    //     // Determine the shard index and table for the first item in the batch
+    //     const shardIndex = this.getShardIndex(items[0].id);
+    //     const table = this.getShardTable(shardIndex, tableName);
+    //     // Bulk insert all items into the determined table
+    //     await table.bulkAdd(items);
+    // }
 
     async deleteItemById(id: string, tableName: string): Promise<void> {
         // Determine the shard index and table
@@ -127,4 +130,16 @@ export class ShardingService<T extends Item> {
         }
         return allItems;
     }
+   
+
+    async searchItems(callback :  (db:ShardedDB<T>)=>Promise<T[]>, limit?: number ): Promise<T[]> {
+        const allItems: T[] = [];
+        for (const dbInstance of this.dbInstances) {
+            const items = await callback(dbInstance)
+            allItems.push(...items);
+        }
+        return allItems;
+    }
+    
 }
+

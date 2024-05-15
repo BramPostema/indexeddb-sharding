@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from "@jest/globals";
+import { describe, expect } from "@jest/globals";
 import "fake-indexeddb/auto";
 import { ShardingService } from "../src/index";
 
@@ -167,5 +167,50 @@ describe("insertPreparedItems", () => {
             { id: "5", userId: 123, postId: 456 },
             { id: "6", userId: 123, postId: 456 },
         ]);    
+    });
+});
+describe("shardedArray", () => {
+    it("should return the correct sharded array", async () => {
+        // Arrange
+        const items: Item[] = [
+            { id: "1", userId: 123, postId: 456 },
+            { id: "2", userId: 456, postId: 789 },
+            { id: "3", userId: 789, postId: 123 },
+        ];
+        shardingService = new ShardingService<Item>(3, "shardedArray", {
+            items: "id",
+        });
+        // Act
+        const shardedArray = shardingService.getShardedItemArrays(items);
+        // Assert
+        expect(shardedArray).toEqual([
+            [{ id: "3", userId: 789, postId: 123 }],
+            [{ id: "1", userId: 123, postId: 456 }],
+            [{ id: "2", userId: 456, postId: 789 },],
+        ]);    
+        await shardingService.clearDatabases();
+
+    });
+});
+describe("shardedArray", () => {
+    it("should throw error when id is undefined", async () => {
+        shardingService = new ShardingService<Item>(3, "shardedarray",{
+            items: "id",
+        });
+        // Arrange
+        const items = [
+            { userId: 123, postId: 456 },
+            { userId: 456, postId: 789 },
+            { userId: 789, postId: 123 },
+        ];
+        shardingService = new ShardingService<Item>(3, "shardedArray", {
+            items: "id",
+        });
+        // Act
+        
+        // Assert
+        // @ts-ignore
+        expect(() => shardingService.getShardedItemArrays(items)).toThrowError("Item id is required. Current item id is undefined.");    
+        await shardingService.clearDatabases();
     });
 });

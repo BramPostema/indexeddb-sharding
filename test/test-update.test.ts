@@ -43,20 +43,5 @@ describe('ShardedServiceTest', () => {
         await shardedService.clearDatabases();
 
     });
-    it('should handle errors when updating an item', async () => {
-        shardedService = new ShardingService<Item>(3, 'tester', { items: 'id' });
-        // Create a new ShardedService
-        const initialData = { id: "1", name: 'Service 1' };
-        await shardedService.insertItem(initialData, 'items');
-
-        // Update the ShardedService with invalid data
-        const updatedData = { id: '1', name: 'Updated Service 1' };
-        // await expect(shardedService.updateItemById(updatedData, 'items')).rejects.toThrowError();
-
-        // Retrieve the original ShardedService
-        const retrievedData = await shardedService.getItemById('1', 'items');
-        // Assert that the ShardedService has not been updated
-        // expect(retrievedData).toEqual(initialData);
-        await shardedService.clearDatabases();
-    });
+  
 });
