@@ -1,54 +1,55 @@
-name: CI
+name: Build
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
 
 jobs:
-  build:
+  sonarcloud:
+    name: SonarCloud
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: '18'  # Use Node.js version 18 or higher
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm test -- --coverage
 
-      - name: Run SonarQube analysis
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          npm install -g sonar-scanner
-          sonar-scanner \
-            -Dsonar.projectKey=your_project_key \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://your_sonarqube_server \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-      - name: Check SonarQube Quality Gate
+      - name: Check SonarCloud Quality Gate
         id: check_quality_gate
         run: |
           quality_gate_status=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-            "https://your_sonarqube_server/api/qualitygates/project_status?projectKey=your_project_key" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=your_project_key" \
             | jq -r '.projectStatus.status')
           echo "Quality Gate status: $quality_gate_status"
           echo "::set-output name=status::$quality_gate_status"
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Fail if Quality Gate fails
         if: steps.check_quality_gate.outputs.status != 'OK'
         run: exit 1
+
+      - name: Publish to npm
+        if: github.ref == 'refs/heads/main'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm version patch
+          npm publish
