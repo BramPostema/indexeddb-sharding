@@ -1,0 +1,51 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          npm install -g sonar-scanner
+          sonar-scanner \
+            -Dsonar.projectKey=your_project_key \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://your_sonarqube_server \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Check SonarQube Quality Gate
+        id: check_quality_gate
+        run: |
+          quality_gate_status=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "https://your_sonarqube_server/api/qualitygates/project_status?projectKey=your_project_key" \
+            | jq -r '.projectStatus.status')
+          echo "Quality Gate status: $quality_gate_status"
+          echo "::set-output name=status::$quality_gate_status"
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Fail if Quality Gate fails
+        if: steps.check_quality_gate.outputs.status != 'OK'
+        run: exit 1
