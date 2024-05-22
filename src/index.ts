@@ -93,17 +93,17 @@ export class ShardingService<T extends Item> {
         await table.delete(id);
     }
 
-    async updateItemById(updatedItem: T, tableName: string): Promise<void> {
+    async updateItemById(updatedItem: T, tableName: string): Promise<Item> {
         // Determine the shard index and table
         const shardIndex = this.getShardIndex(updatedItem.id);
         const table = this.getShardTable(shardIndex, tableName);
         // Update the item in the determined table
-        await table.update(updatedItem.id , updatedItem as UpdateSpec<T>).then((updated) => {
+        return await table.update(updatedItem.id , updatedItem as UpdateSpec<T>).then((updated) => {
             if (updated) {
-                console.log(`Item with ID ${updatedItem.id} updated successfully.`);
+                return updatedItem;
             }
             else {
-                console.log(`Item with ID ${updatedItem.id} not found.`);
+                throw new Error(`Item with ID ${updatedItem.id} not found.`);
             }
         });
     }

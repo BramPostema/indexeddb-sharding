@@ -32,11 +32,10 @@ export class ShardedDB<T extends Item> extends Dexie {
 
         // Initialize tables based on provided definitions
         for (const tableName in tableDefinitions) {
-            if (tableDefinitions.hasOwnProperty(tableName)) {
                 // Access tables according to provided definitions
                 const table = this.table<T, any>(tableName);
                 this.tableDefinitions[tableName] = table;
-            }
+            
         }
     }
 }
