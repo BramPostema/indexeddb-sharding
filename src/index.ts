@@ -26,7 +26,7 @@ export class ShardingService<T extends Item> {
     }
     public getShardedItemArrays(items: T[]): T[][] {
         // Group items by shard index
-        const itemsByShard: T[][] = new Array(this.shardCount).fill([]).map(() => []);
+        const itemsByShard: T[][] = new Array(this.shardCount).fill(null).map(() => []);
         for (const item of items) {
             if (item.id === undefined) {
                 throw new Error('Item id is required. Current item id is '+item.id+ ".");

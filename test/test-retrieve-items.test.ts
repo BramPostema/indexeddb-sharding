@@ -57,7 +57,7 @@ describe('searchItems', () => {
         expect(searchResults).toContainEqual(item1);
         expect(searchResults).toContainEqual(item2);
         expect(searchResults).not.toContainEqual(item3);
-
+        expect(searchResults.length).toBe(2);
         await shardedService.clearDatabases();
     })
 })
