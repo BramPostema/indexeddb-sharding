@@ -64,10 +64,7 @@ export class ShardingService<T extends Item> {
     async putItemBatch(items: T[], tableName: string): Promise<void> {
         // Insert a batch of items into the appropriate shard tables
         const shardItemArrays: T[][]=this.getShardedItemArrays(items);
-        let promises: Promise<void>[] = [];
-        for (const item of shardItemArrays) {
-            promises.push(this.putPreparedItems(item, tableName));
-        }
+        const promises = shardItemArrays.map(item => this.putPreparedItems(item, tableName));
         await Promise.all(promises);
     }
     async putPreparedItems(items: T[], tableName: string): Promise<void> {
