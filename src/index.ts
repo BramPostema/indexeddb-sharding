@@ -3,12 +3,12 @@ import Dexie, { UpdateSpec } from 'dexie';
 import { Item } from './types';
 
 export class ShardingService<T extends Item> {
-    private dbInstances: ShardedDB<T>[] = [];
+    public dbInstances: ShardedDB<T>[] = [];
 
     constructor(
-        private shardCount: number,
-        private dbName: string,
-        private tableDefinitions: Record<string, string>
+        public shardCount: number,
+        public dbName: string,
+        public tableDefinitions: Record<string, string>
     ) {
         if (this.shardCount < 1) {
             throw new Error('Shard count must be greater than 0.');
@@ -26,7 +26,7 @@ export class ShardingService<T extends Item> {
     }
     public getShardedItemArrays(items: T[]): T[][] {
         // Group items by shard index
-        const itemsByShard: T[][] = new Array(this.shardCount).fill([]).map(() => []);
+        const itemsByShard: T[][] = new Array(this.shardCount).fill(null).map(() => []);
         for (const item of items) {
             if (item.id === undefined) {
                 throw new Error('Item id is required. Current item id is '+item.id+ ".");
@@ -36,13 +36,13 @@ export class ShardingService<T extends Item> {
         }
         return itemsByShard.filter((shardItems) => shardItems.length > 0);
     }
-    private getShardIndex(id: string): number {
+    public getShardIndex(id: string): number {
         // Determine the shard index based on the item's ID (e.g., hash it and mod by shard count)
-        const hashValue = parseInt(id, 16); // Convert the ID (hex) to an integer
+        const hashValue = parseInt(id, 36); // Convert the ID (hex) to an integer
         return hashValue % this.shardCount; // Mod by shard count to determine shard index
     }
 
-    private getShardTable(shardIndex: number, tableName: string): Dexie.Table<T, string> {
+    public getShardTable(shardIndex: number, tableName: string): Dexie.Table<T, string> {
         // Return the appropriate table from the specified shard
         return this.dbInstances[shardIndex].tableDefinitions[tableName];
     }
@@ -93,17 +93,17 @@ export class ShardingService<T extends Item> {
         await table.delete(id);
     }
 
-    async updateItemById(updatedItem: T, tableName: string): Promise<void> {
+    async updateItemById(updatedItem: T, tableName: string): Promise<Item> {
         // Determine the shard index and table
         const shardIndex = this.getShardIndex(updatedItem.id);
         const table = this.getShardTable(shardIndex, tableName);
         // Update the item in the determined table
-        await table.update(updatedItem.id , updatedItem as UpdateSpec<T>).then((updated) => {
+        return await table.update(updatedItem.id , updatedItem as UpdateSpec<T>).then((updated) => {
             if (updated) {
-                console.log(`Item with ID ${updatedItem.id} updated successfully.`);
+                return updatedItem;
             }
             else {
-                console.log(`Item with ID ${updatedItem.id} not found.`);
+                throw new Error(`Item with ID ${updatedItem.id} not found.`);
             }
         });
     }

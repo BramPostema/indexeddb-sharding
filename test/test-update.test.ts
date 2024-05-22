@@ -18,7 +18,7 @@ describe('ShardedServiceTest', () => {
 
         // // Update the ShardedService
         const updatedData = { id: '1', name: 'Updated Service 1' };
-        await shardedService.updateItemById(updatedData, 'items');
+        expect(await shardedService.updateItemById(updatedData, 'items')).toEqual(updatedData);
 
         // Retrieve the updated ShardedService
         const retrievedData = await shardedService.getItemById('1', 'items');
@@ -34,7 +34,7 @@ describe('ShardedServiceTest', () => {
 
         // // Update the ShardedService
         const updatedData = { id: '2', name: 'Updated Service 1' };
-        await shardedService.updateItemById(updatedData, 'items');
+        await expect(shardedService.updateItemById(updatedData, 'items')).rejects.toThrowError("Item with ID 2 not found.");
 
         // Retrieve the updated ShardedService
         const retrievedData = await shardedService.getItemById('1', 'items');
