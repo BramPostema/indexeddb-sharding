@@ -1,6 +1,6 @@
 {
   "name": "indexeddb-sharding",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Package to insert large amounts of data into indexeddb while preserving the performance. ",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
